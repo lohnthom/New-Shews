@@ -9,6 +9,7 @@ bl_info = {
 }
 
 import bpy
+from . import keymaps
 from .tools import build_cam_rig
 from .tools.texture_displacement import (
     classes as disp_classes,
@@ -26,6 +27,7 @@ from .tools.save_export import (
 from .tools.scene_utils import (
     classes as utils_classes,
 )
+from .tools.curve_rebuild import classes as curve_classes
 
 
 class STUDIO_OT_create_cam_rig(bpy.types.Operator):
@@ -48,15 +50,15 @@ class STUDIO_OT_create_suzanne(bpy.types.Operator):
         return {"FINISHED"}
 
 
-class STUDIO_PT_newshews_info(bpy.types.Panel):
-    bl_label = "New Shews"
-    bl_idname = "STUDIO_PT_newshews_info"
+class STUDIO_PT_print_prep_panel(bpy.types.Panel):
+    bl_label = "3D Print Prep"
+    bl_idname = "STUDIO_PT_print_prep_panel"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "New Shews"
 
     def draw(self, context):
-        self.layout.label(text="If nothing is selected, all is selected.", icon="INFO")
+        pass
 
 
 class STUDIO_PT_displacement_panel(bpy.types.Panel):
@@ -65,6 +67,8 @@ class STUDIO_PT_displacement_panel(bpy.types.Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "New Shews"
+    bl_parent_id = "STUDIO_PT_print_prep_panel"
+    bl_order = 0
 
     def draw(self, context):
         layout = self.layout
@@ -79,6 +83,8 @@ class STUDIO_PT_material_textures_panel(bpy.types.Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "New Shews"
+    bl_parent_id = "STUDIO_PT_print_prep_panel"
+    bl_order = 1
 
     def draw(self, context):
         layout = self.layout
@@ -99,6 +105,17 @@ class STUDIO_PT_panel(bpy.types.Panel):
         layout.operator("studio.create_suzanne", icon="MESH_MONKEY")
 
 
+class STUDIO_PT_curve_tools_panel(bpy.types.Panel):
+    bl_label = "Curve Tools"
+    bl_idname = "STUDIO_PT_curve_tools_panel"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "New Shews"
+
+    def draw(self, context):
+        self.layout.operator("studio.curve_rebuild", icon="CURVE_DATA")
+
+
 class STUDIO_PT_scene_utils_panel(bpy.types.Panel):
     bl_label = "Scene Utils"
     bl_idname = "STUDIO_PT_scene_utils_panel"
@@ -116,6 +133,8 @@ class STUDIO_PT_save_export_panel(bpy.types.Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "New Shews"
+    bl_parent_id = "STUDIO_PT_print_prep_panel"
+    bl_order = 2
 
     def draw(self, context):
         layout = self.layout
@@ -126,12 +145,13 @@ class STUDIO_PT_save_export_panel(bpy.types.Panel):
 local_classes = (
     STUDIO_OT_create_cam_rig,
     STUDIO_OT_create_suzanne,
-    STUDIO_PT_newshews_info,
+    STUDIO_PT_print_prep_panel,
     STUDIO_PT_displacement_panel,
     STUDIO_PT_material_textures_panel,
-    STUDIO_PT_panel,
-    STUDIO_PT_scene_utils_panel,
     STUDIO_PT_save_export_panel,
+    STUDIO_PT_panel,
+    STUDIO_PT_curve_tools_panel,
+    STUDIO_PT_scene_utils_panel,
 )
 
 
@@ -146,11 +166,17 @@ def register():
         bpy.utils.register_class(c)
     for c in utils_classes:
         bpy.utils.register_class(c)
+    for c in curve_classes:
+        bpy.utils.register_class(c)
     disp_register_props()
     export_register_props()
+    keymaps.register()
 
 
 def unregister():
+    keymaps.unregister()
+    for c in reversed(curve_classes):
+        bpy.utils.unregister_class(c)
     export_unregister_props()
     disp_unregister_props()
     for c in reversed(utils_classes):
