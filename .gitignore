@@ -1,3 +1,11 @@
+# macOS metadata
 .DS_Store
+._*
+
+# Python bytecode
 __pycache__/
 *.py[cod]
+
+# Blender save backups (keep original .blend assets trackable)
+*.blend[0-9]*
+*.blend@
